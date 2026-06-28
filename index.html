@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>寒霜纪元：重生领主 - 互动影游平台</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23080d12'/%3E%3Ctext x='32' y='42' font-size='34' text-anchor='middle' fill='%23f0b45d'%3E%E9%9C%9C%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <img class="world-bg" src="./assets/frost-command-bg.png" alt="" />
+      <div class="weather" aria-hidden="true"></div>
+      <div class="screen-shade" aria-hidden="true"></div>
+
+      <header class="command-bar">
+        <button class="brand" data-action="home" aria-label="返回剧情体验">
+          <span class="brand-mark">霜</span>
+          <span>
+            <strong>寒霜纪元：重生领主</strong>
+            <small>Interactive Film Command</small>
+          </span>
+        </button>
+        <nav class="segment-nav" aria-label="平台功能">
+          <button class="active" data-view="play">剧情</button>
+          <button data-view="shelter">庇护所</button>
+          <button data-view="studio">剧情树</button>
+          <button data-view="ops">商业后台</button>
+        </nav>
+        <div class="quick-actions">
+          <button class="icon-btn" data-action="save" title="存档" aria-label="存档">▣</button>
+          <button class="icon-btn" data-action="load" title="读档" aria-label="读档">↻</button>
+          <button class="icon-btn" data-action="panel" title="角色与背包" aria-label="角色与背包">☰</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="status-rail" aria-label="完整属性概览">
+          <section class="identity">
+            <div class="portrait"><span>陆</span></div>
+            <div>
+              <p class="eyebrow">重生者 / 灾前三天</p>
+              <h1 id="currentTitle">寒潮前72小时</h1>
+            </div>
+          </section>
+          <section class="stat-stack" id="stats"></section>
+          <section class="relation-box">
+            <div class="rail-title">关系网</div>
+            <div id="relations"></div>
+          </section>
+          <section class="mini-ledger">
+            <div><b id="itemCount">0</b><span>物资</span></div>
+            <div><b id="achCount">0</b><span>成就</span></div>
+            <div><b id="endingCount">0</b><span>结局</span></div>
+          </section>
+        </aside>
+
+        <section class="view view-play active" id="view-play">
+          <div class="film-console">
+            <div class="film-head">
+              <span id="episodeLabel">CH01 / NODE 001</span>
+              <div class="basic-stats" id="basicStats"></div>
+              <span id="riskLabel">寒意警戒：中</span>
+            </div>
+            <div class="video-window">
+              <img class="scene-visual" id="sceneVisual" src="./assets/scenes/safehouse-awakening.png" alt="" />
+              <div class="scanlines" aria-hidden="true"></div>
+              <div class="pause-badge" id="playState">点击播放 · 台词音频</div>
+              <div class="frost-meter">
+                <span>寒潮倒计时</span>
+                <strong id="countdown">72:00:00</strong>
+              </div>
+              <div class="video-controls" aria-label="影像控制">
+                <button data-action="replayScene">▶ 播放</button>
+                <button data-action="skipScene">跳过</button>
+              </div>
+              <div class="choice-grid" id="choices"></div>
+              <div class="dialogue-dock">
+                <div class="scene-card" id="sceneCard"></div>
+                <p id="dialogueText"></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view view-shelter" id="view-shelter">
+          <div class="shelter-layout">
+            <section class="war-room">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Shelter Command</p>
+                  <h2>北境庇护所</h2>
+                </div>
+                <button data-action="autoPlan">执行一键调度</button>
+              </div>
+              <div class="base-map" id="baseMap"></div>
+            </section>
+            <section class="task-board">
+              <div class="section-head">
+                <h2>生存任务</h2>
+                <span id="phaseLabel">Phase1 Demo</span>
+              </div>
+              <div id="tasks"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view view-studio" id="view-studio">
+          <div class="studio-layout">
+            <section class="node-browser">
+              <div class="section-head">
+                <h2>剧情节点配置</h2>
+                <button data-action="addNode">＋</button>
+              </div>
+              <div id="nodeList"></div>
+            </section>
+            <form class="node-editor" id="nodeForm">
+              <label>
+                节点标题
+                <input name="title" />
+              </label>
+              <label>
+                视频画面提示
+                <input name="visual" />
+              </label>
+              <label>
+                剧情对白
+                <textarea name="dialogue" rows="4"></textarea>
+              </label>
+              <label>
+                选项 JSON
+                <textarea name="choicesRaw" rows="12" spellcheck="false"></textarea>
+              </label>
+              <div class="form-actions">
+                <button type="button" data-action="exportStory">导出剧情 JSON</button>
+                <button type="submit" class="primary">保存节点</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="view view-ops" id="view-ops">
+          <div class="ops-layout">
+            <article class="ops-panel">
+              <h2>会员与付费</h2>
+              <div id="vipState"></div>
+              <button class="primary" data-action="toggleVip">切换会员体验</button>
+            </article>
+            <article class="ops-panel">
+              <h2>商城配置</h2>
+              <div id="shop"></div>
+            </article>
+            <article class="ops-panel">
+              <h2>运营数据</h2>
+              <div class="metric-grid" id="metrics"></div>
+            </article>
+            <article class="ops-panel wide">
+              <h2>REST API 草案</h2>
+              <pre id="apiSpec"></pre>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <aside class="side-panel" id="sidePanel" aria-hidden="true">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Role Center</p>
+            <h2>角色 / 背包 / 成就</h2>
+          </div>
+          <button class="icon-btn" data-action="closePanel" aria-label="关闭">×</button>
+        </div>
+        <div class="panel-tabs">
+          <button class="active" data-panel="profile">角色</button>
+          <button data-panel="bag">背包</button>
+          <button data-panel="achievements">成就</button>
+          <button data-panel="system">系统</button>
+        </div>
+        <div class="panel-body" id="panelBody"></div>
+      </aside>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+    <script src="./story-data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

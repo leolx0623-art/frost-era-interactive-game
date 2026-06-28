@@ -1,5 +1,10 @@
-const STORAGE_STORY = "frost-era-story-v5";
-const STORAGE_STATE = "frost-era-state-v5";
+const STORAGE_STORY = "frost-era-story-v6";
+const STORAGE_STATE = "frost-era-state-v6";
+
+// 清除旧版本缓存，防止数据结构冲突
+(function clearLegacyCache() {
+  ["frost-era-story-v4","frost-era-story-v5","frost-era-state-v4","frost-era-state-v5"].forEach(k => localStorage.removeItem(k));
+})();
 
 /* ===================== 字幕数据配置 ===================== */
 const subtitleData = {
@@ -253,7 +258,7 @@ const taskList = [
   { id: "fuel", title: "建立三日燃料储备", need: "资源 >= 50", test: s => s.stats.资源 >= 50 },
   { id: "pop", title: "人口突破50", need: "人口 >= 50", test: s => s.stats.人口 >= 50 },
   { id: "power", title: "武力称霸", need: "武力 >= 60", test: s => s.stats.武力 >= 60 },
-  { id: "fame", title: "声望远播", need: "声望 >= 50", need: "声望 >= 50", test: s => s.stats.声望 >= 50 },
+  { id: "fame", title: "声望远播", need: "声望 >= 50", test: s => s.stats.声望 >= 50 },
   { id: "ending", title: "解锁任意终局", need: "完成一个结局", test: s => s.endings.length > 0 }
 ];
 
@@ -501,6 +506,16 @@ function getTitle() {
   return "灾前预备者";
 }
 
+/* 性能优化：暂停背景动画节省 GPU */
+function pauseWeatherAnimation() {
+  const weather = document.querySelector('.weather');
+  if (weather) weather.style.animationPlayState = 'paused';
+}
+function resumeWeatherAnimation() {
+  const weather = document.querySelector('.weather');
+  if (weather) weather.style.animationPlayState = 'running';
+}
+
 let subtitleTimer = null;
 let gameStarted = false;
 
@@ -541,6 +556,7 @@ function playOpeningCinematic() {
   cinematic.classList.add("active");
   subtitle.textContent = "";
   video.currentTime = 0;
+  pauseWeatherAnimation();
 
   const subtitleText = "2100年，全球寒潮灾难后3年了。文明崩塌，秩序毁灭。幸存者在寒潮中挣扎求生，而我........竟然重生了";
   const duration = Math.min(10000, Math.max(5000, subtitleText.length * 110));
@@ -589,6 +605,7 @@ function finishOpeningCinematic() {
     video.onerror = null;
   }
   stopSubtitleTypewriter();
+  resumeWeatherAnimation();
   if (cinematic) {
     cinematic.classList.remove("active");
   }
@@ -608,44 +625,37 @@ function playScene01Cinematic() {
 
   cinematic.classList.add("active");
   video.currentTime = 0;
+  pauseWeatherAnimation();
 
-  // 字幕系统：根据时间轴显示旁白和对话
+  // 统一字幕系统：根据时间轴显示旁白和对话
   const subs = subtitleData["scene_01"] || [];
   let currentSubIndex = -1;
-  let timeUpdateHandler = null;
 
-  if (subs.length > 0) {
-    timeUpdateHandler = () => {
-      const t = video.currentTime;
-      for (let i = subs.length - 1; i >= 0; i--) {
-        if (t >= subs[i].time) {
-          if (currentSubIndex !== i) {
-            currentSubIndex = i;
+  function timeUpdateHandler() {
+    const t = video.currentTime;
+    // 字幕切换
+    for (let i = subs.length - 1; i >= 0; i--) {
+      if (t >= subs[i].time) {
+        if (currentSubIndex !== i) {
+          currentSubIndex = i;
+          if (subs[i].type === "dialogue") {
+            showCharacterDialogue(subs[i].speaker, subs[i].text, 4500);
+          } else {
+            hideCharacterDialogue();
             showSceneSubtitle(subs[i]);
           }
-          break;
         }
+        break;
       }
-    };
-    video.addEventListener("timeupdate", timeUpdateHandler);
-  }
-
-  // 保留原有的角色对话逻辑作为后备
-  const dialogueData = { speaker: "陆寒", text: "重生了，我重生了，我一定要成为末日最强者", triggerTime: 9 };
-  let dialogueShown = false;
-
-  video.addEventListener("timeupdate", function onTimeUpdate() {
-    if (!dialogueShown && video.currentTime >= dialogueData.triggerTime) {
-      dialogueShown = true;
-      showCharacterDialogue(dialogueData.speaker, dialogueData.text, 4500);
     }
-  });
+  }
+  video.addEventListener("timeupdate", timeUpdateHandler);
 
-  const cleanup = () => {
-    if (timeUpdateHandler) video.removeEventListener("timeupdate", timeUpdateHandler);
+  function cleanup() {
+    video.removeEventListener("timeupdate", timeUpdateHandler);
     hideSceneSubtitle();
     hideCharacterDialogue();
-  };
+  }
 
   video.play().catch(err => {
     console.log("第二段视频播放失败:", err);
@@ -720,6 +730,7 @@ function finishScene01Cinematic() {
     video.onerror = null;
   }
   stopSubtitleTypewriter();
+  resumeWeatherAnimation();
   if (cinematic) {
     cinematic.classList.remove("active");
   }
@@ -730,6 +741,7 @@ function finishScene01Cinematic() {
 function enterMainGame() {
   document.querySelector(".command-bar").style.display = "";
   document.querySelector(".workspace").style.display = "";
+  resumeWeatherAnimation();
   render();
   // 第一个节点直接显示为暂停状态，展示选项
   if (state.nodeId === story.start) {
@@ -815,11 +827,12 @@ function playBranchCinematic(videoSrc, onComplete, subtitleKey) {
   cinematic.classList.add("active");
   video.src = videoSrc;
   video.currentTime = 0;
+  pauseWeatherAnimation();
 
   // 字幕系统
-  let timeUpdateHandler = null;
   const subs = subtitleKey ? (subtitleData[subtitleKey] || []) : [];
   let currentSubIndex = -1;
+  let timeUpdateHandler = null;
 
   if (subs.length > 0) {
     timeUpdateHandler = () => {
@@ -846,18 +859,21 @@ function playBranchCinematic(videoSrc, onComplete, subtitleKey) {
     console.log("分支视频播放失败:", err);
     cleanup();
     cinematic.classList.remove("active");
+    resumeWeatherAnimation();
     onComplete();
   });
 
   video.onended = () => {
     cleanup();
     cinematic.classList.remove("active");
+    resumeWeatherAnimation();
     onComplete();
   };
 
   video.onerror = () => {
     cleanup();
     cinematic.classList.remove("active");
+    resumeWeatherAnimation();
     onComplete();
   };
 }
@@ -989,10 +1005,16 @@ function stopTypewriter() {
 function applyPlaybackState() {
   const videoWindow = document.querySelector(".video-window");
   const playState = document.getElementById("playState");
+  const dialogueDock = document.querySelector(".dialogue-dock");
   if (!videoWindow || !playState) return;
   videoWindow.classList.toggle("awaiting", sceneMode === "awaiting");
   videoWindow.classList.toggle("playing", sceneMode === "playing");
   videoWindow.classList.toggle("paused", sceneMode === "paused");
+  // 选择等待时隐藏对话区，避免与选项弹框重叠
+  if (dialogueDock) {
+    dialogueDock.style.opacity = sceneMode === "paused" ? "0" : "1";
+    dialogueDock.style.pointerEvents = sceneMode === "paused" ? "none" : "auto";
+  }
   const labels = {
     awaiting: "准备中 · 自动播放",
     playing: "播放中 · 旁白",

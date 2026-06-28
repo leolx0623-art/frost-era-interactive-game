@@ -13,6 +13,27 @@
       <div class="weather" aria-hidden="true"></div>
       <div class="screen-shade" aria-hidden="true"></div>
 
+      <div class="title-screen active" id="titleScreen">
+        <video class="title-video" id="titleVideo" src="./videos/scene_01_opening.mp4" muted loop playsinline preload="auto"></video>
+        <div class="title-overlay"></div>
+        <div class="title-content">
+          <h1 class="game-title">寒霜纪元：重生领主</h1>
+          <p class="game-subtitle">FROST ERA: REBORN LORD</p>
+          <div class="title-buttons">
+            <button class="title-btn primary" data-action="startGame">开始游戏</button>
+            <button class="title-btn" data-action="loadGame">读取存档</button>
+            <button class="title-btn" data-action="achievementsView">成就图鉴</button>
+            <button class="title-btn" data-action="settingsView">游戏设置</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="opening-cinematic" id="openingCinematic">
+        <video class="cinematic-video" id="cinematicVideo" src="./videos/scene_01_opening.mp4" playsinline preload="auto"></video>
+        <div class="cinematic-overlay"></div>
+        <div class="subtitle-overlay" id="subtitleOverlay"></div>
+      </div>
+
       <header class="command-bar">
         <button class="brand" data-action="home" aria-label="返回剧情体验">
           <span class="brand-mark">霜</span>
@@ -58,13 +79,24 @@
         <section class="view view-play active" id="view-play">
           <div class="film-console">
             <div class="film-head">
-              <span id="episodeLabel">CH01 / NODE 001</span>
+              <div class="film-head-left">
+                <div class="hero-hud" id="heroHud">
+                  <div class="hero-avatar"><span>陆</span></div>
+                  <div class="hero-info">
+                    <span class="hero-name">陆寒</span>
+                    <span class="hero-title">重生者</span>
+                  </div>
+                </div>
+                <span id="episodeLabel">CH01 / NODE 001</span>
+              </div>
               <div class="basic-stats" id="basicStats"></div>
               <span id="riskLabel">寒意警戒：中</span>
             </div>
             <div class="video-window">
-              <img class="scene-visual" id="sceneVisual" src="./assets/scenes/safehouse-awakening.png" alt="" />
+              <img class="scene-visual" id="sceneImg" src="" alt="" />
+              <video class="scene-visual" id="sceneVisual" src="" playsinline preload="auto" style="display:none;"></video>
               <div class="scanlines" aria-hidden="true"></div>
+              <div class="game-subtitle-overlay" id="gameSubtitleOverlay"></div>
               <div class="pause-badge" id="playState">点击播放 · 台词音频</div>
               <div class="frost-meter">
                 <span>寒潮倒计时</span>

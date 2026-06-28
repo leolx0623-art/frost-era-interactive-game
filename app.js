@@ -338,9 +338,10 @@ function render() {
 
 function renderBasicStats() {
   const basic = ["资源", "人口", "武力", "声望", "寒意值"];
-  document.getElementById("basicStats").innerHTML = basic.map(name => `
-    <span class="basic-chip">${name}<b>${clamp(state.stats[name])}</b></span>
-  `).join("");
+  document.getElementById("basicStats").innerHTML = basic.map(name => {
+    const value = clamp(state.stats[name]);
+    return `<span class="basic-chip">${name}<div class="basic-chip-bar"><span style="width:${value}%"></span></div><b>${value}</b></span>`;
+  }).join("");
 }
 
 function renderStats() {
@@ -369,7 +370,18 @@ function renderPlay() {
   document.getElementById("episodeLabel").textContent = `${current.chapter} / ${state.nodeId}`;
   document.getElementById("riskLabel").textContent = `寒意警戒：${current.risk || "中"}`;
   document.getElementById("countdown").textContent = current.countdown || "72:00:00";
-  document.getElementById("sceneVisual").src = current.media || "./assets/frost-command-bg.png";
+  const media = current.media || "./assets/frost-command-bg.png";
+  if (media.endsWith('.mp4') || media.endsWith('.webm')) {
+    document.getElementById("sceneImg").style.display = 'none';
+    const video = document.getElementById("sceneVisual");
+    video.style.display = '';
+    video.src = media;
+  } else {
+    document.getElementById("sceneVisual").style.display = 'none';
+    const img = document.getElementById("sceneImg");
+    img.style.display = '';
+    img.src = media;
+  }
   document.getElementById("sceneCard").textContent = current.visual;
   document.getElementById("dialogueText").textContent = getSceneScript(current);
   document.getElementById("choices").innerHTML = current.choices.map((choice, index) => {
@@ -497,6 +509,124 @@ function getTitle() {
   if (state.stats.声望 >= 60) return "北境盟主";
   if (state.stats.领袖值 >= 55) return "重生领主";
   return "灾前预备者";
+}
+
+let subtitleTimer = null;
+let gameStarted = false;
+
+function initTitleScreen() {
+  const titleVideo = document.getElementById("titleVideo");
+  if (titleVideo) {
+    titleVideo.play().then(() => {
+      titleVideo.pause();
+    }).catch(() => {});
+  }
+}
+
+function hideTitleScreen() {
+  const titleScreen = document.getElementById("titleScreen");
+  if (!titleScreen) return;
+  titleScreen.classList.add("fade-out");
+  setTimeout(() => {
+    titleScreen.classList.remove("active", "fade-out");
+  }, 800);
+}
+
+function showTitleScreen() {
+  const titleScreen = document.getElementById("titleScreen");
+  if (titleScreen) {
+    titleScreen.classList.add("active");
+    initTitleScreen();
+  }
+}
+
+function playOpeningCinematic() {
+  hideTitleScreen();
+  const cinematic = document.getElementById("openingCinematic");
+  const video = document.getElementById("cinematicVideo");
+  const subtitle = document.getElementById("subtitleOverlay");
+  if (!cinematic || !video || !subtitle) return;
+
+  cinematic.classList.add("active");
+  subtitle.textContent = "";
+  video.currentTime = 0;
+
+  const subtitleText = "2100年，全球寒潮灾难后3年了。文明崩塌，秩序毁灭。幸存者在寒潮中挣扎求生，而我........竟然重生了";
+  const duration = Math.min(10000, Math.max(5000, subtitleText.length * 110));
+
+  video.play().catch(err => {
+    console.log("视频播放失败:", err);
+    finishOpeningCinematic();
+  });
+
+  startSubtitleTypewriter(subtitleText, duration);
+
+  video.onended = () => {
+    finishOpeningCinematic();
+  };
+
+  video.onerror = () => {
+    finishOpeningCinematic();
+  };
+}
+
+function startSubtitleTypewriter(text, duration) {
+  stopSubtitleTypewriter();
+  const target = document.getElementById("subtitleOverlay");
+  if (!target) return;
+  target.textContent = "";
+  let index = 0;
+  const interval = Math.max(30, Math.min(80, Math.floor(duration / Math.max(text.length, 1))));
+  subtitleTimer = setInterval(() => {
+    index += 1;
+    target.textContent = text.slice(0, index);
+    if (index >= text.length) stopSubtitleTypewriter();
+  }, interval);
+}
+
+function stopSubtitleTypewriter() {
+  clearInterval(subtitleTimer);
+  subtitleTimer = null;
+}
+
+function finishOpeningCinematic() {
+  const cinematic = document.getElementById("openingCinematic");
+  const video = document.getElementById("cinematicVideo");
+  if (video) {
+    video.pause();
+    video.onended = null;
+    video.onerror = null;
+  }
+  stopSubtitleTypewriter();
+  if (cinematic) {
+    cinematic.classList.remove("active");
+  }
+  gameStarted = true;
+  enterMainGame();
+}
+
+function enterMainGame() {
+  document.querySelector(".command-bar").style.display = "";
+  document.querySelector(".workspace").style.display = "";
+  render();
+  prepareScenePlayback();
+}
+
+function showGameSubtitle(text, duration = 4000) {
+  const overlay = document.getElementById("gameSubtitleOverlay");
+  if (!overlay) return;
+  overlay.textContent = "";
+  overlay.classList.add("show");
+  let index = 0;
+  const interval = Math.max(25, Math.min(70, Math.floor(duration / Math.max(text.length, 1))));
+  const timer = setInterval(() => {
+    index += 1;
+    overlay.textContent = text.slice(0, index);
+    if (index >= text.length) {
+      clearInterval(timer);
+      setTimeout(() => overlay.classList.remove("show"), 2000);
+    }
+  }, interval);
 }
 
 function choose(index) {
@@ -790,6 +920,22 @@ document.addEventListener("click", event => {
     toast("已读取最近存档。");
     render();
   }
+  if (action === "startGame") {
+    playOpeningCinematic();
+  }
+  if (action === "loadGame") {
+    state = loadJson(STORAGE_STATE, initialState);
+    hideTitleScreen();
+    gameStarted = true;
+    enterMainGame();
+    toast("已读取存档，欢迎回来，陆寒。");
+  }
+  if (action === "achievementsView") {
+    toast("成就图鉴功能开发中...");
+  }
+  if (action === "settingsView") {
+    toast("游戏设置功能开发中...");
+  }
   if (action === "panel") {
     document.getElementById("sidePanel").classList.add("open");
     document.getElementById("sidePanel").setAttribute("aria-hidden", "false");
@@ -826,4 +972,14 @@ document.addEventListener("click", event => {
 
 document.getElementById("nodeForm").addEventListener("submit", saveNode);
 updateCompletedTasks();
-render();
+
+// 开场电影点击跳过
+document.getElementById("openingCinematic")?.addEventListener("click", (e) => {
+  if (e.target.closest(".subtitle-overlay")) return;
+  finishOpeningCinematic();
+});
+
+// 初始化标题画面，隐藏主界面
+document.querySelector(".command-bar").style.display = "none";
+document.querySelector(".workspace").style.display = "none";
+initTitleScreen();

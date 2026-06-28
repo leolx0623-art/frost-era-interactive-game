@@ -1,12 +1,90 @@
-const STORAGE_STORY = "frost-era-story-v4";
-const STORAGE_STATE = "frost-era-state-v4";
+const STORAGE_STORY = "frost-era-story-v5";
+const STORAGE_STATE = "frost-era-state-v5";
 
+/* ===================== 字幕数据配置 ===================== */
+const subtitleData = {
+  "opening": [
+    { time: 0, type: "narration", text: "2100年，全球寒潮灾难后3年了。文明崩塌，秩序毁灭。幸存者在寒潮中挣扎求生，而我........竟然重生了" }
+  ],
+  "scene_01": [
+    { time: 1, type: "narration", text: "寒风呼啸，废墟之上，一个身影缓缓站起。三年前的记忆如潮水般涌来。" },
+    { time: 9, type: "dialogue", speaker: "陆寒", text: "重生了，我重生了，我一定要成为末日最强者" }
+  ],
+  "02A": [
+    { time: 1, type: "narration", text: "你冲向废墟深处，将一个个被困的幸存者从瓦砾中救出。" },
+    { time: 6, type: "dialogue", speaker: "幸存者", text: "谢谢你...谢谢你救了我们！" },
+    { time: 10, type: "narration", text: "你的善举在幸存者中传开，越来越多的人愿意追随你。" }
+  ],
+  "02B": [
+    { time: 1, type: "narration", text: "你转身离开呼救声，独自深入废墟寻找物资。" },
+    { time: 6, type: "dialogue", speaker: "陆寒", text: "同情心在末日是奢侈品，我要先活下去。" },
+    { time: 10, type: "narration", text: "你搜刮到了大量物资，但没有人知道你在这里。" }
+  ],
+  "03A": [
+    { time: 1, type: "narration", text: "你用有限的资源搭建起避难所，越来越多的人前来投奔。" },
+    { time: 6, type: "dialogue", speaker: "幸存者", text: "这里有食物和暖气，我们终于安全了！" },
+    { time: 10, type: "narration", text: "避难所逐渐壮大，你的声望在废墟中传播。" }
+  ],
+  "03B": [
+    { time: 1, type: "narration", text: "你带领小队突袭了废弃的军火库，获得了大量武器弹药。" },
+    { time: 6, type: "dialogue", speaker: "陆寒", text: "有了这些武器，谁也不能威胁我。" },
+    { time: 10, type: "narration", text: "武装力量的扩张让周围的势力对你敬而远之。" }
+  ],
+  "04A": [
+    { time: 1, type: "narration", text: "你与其他幸存者势力达成协议，共同抵御即将到来的更大寒潮。" },
+    { time: 6, type: "dialogue", speaker: "盟友", text: "陆寒，我们愿意与你并肩作战！" },
+    { time: 10, type: "narration", text: "联盟的形成让你的声望达到了新的高度。" }
+  ],
+  "04B": [
+    { time: 1, type: "narration", text: "你趁夜袭击了邻近的据点，将他们并入自己的势力。" },
+    { time: 6, type: "dialogue", speaker: "陆寒", text: "弱者没有资格在这片废墟上生存。" },
+    { time: 10, type: "narration", text: "吞并扩张让你的武力值大幅提升。" }
+  ],
+  "05A": [
+    { time: 1, type: "narration", text: "你在废墟之上建立了新的秩序，人们称你为领袖。" },
+    { time: 6, type: "dialogue", speaker: "民众", text: "陆寒大人，我们愿意追随您！" },
+    { time: 10, type: "narration", text: "文明的火种在你的手中重新点燃。" }
+  ],
+  "05B": [
+    { time: 1, type: "narration", text: "你的势力不断扩张，成为这片废墟上最强大的武装集团。" },
+    { time: 6, type: "dialogue", speaker: "部下", text: "大人，周边所有势力都已臣服！" },
+    { time: 10, type: "narration", text: "武力至上的法则让你成为了末日的霸主。" }
+  ],
+  "ending1": [
+    { time: 1, type: "narration", text: "你以无上的声望和庞大的人口，建立了一个全新的帝国。" },
+    { time: 6, type: "dialogue", speaker: "民众", text: "寒霜帝王万岁！" },
+    { time: 10, type: "narration", text: "人们尊称你为——寒霜帝王。" }
+  ],
+  "ending2": [
+    { time: 1, type: "narration", text: "你以绝对的武力和无尽的资源，统治着这片废墟。" },
+    { time: 6, type: "dialogue", speaker: "陆寒", text: "恐惧，是我最好的武器。" },
+    { time: 10, type: "narration", text: "你成为了——暗影领主。" }
+  ],
+  "ending3": [
+    { time: 1, type: "narration", text: "你掌控了资源的命脉，用贸易编织出一张巨大的网络。" },
+    { time: 6, type: "dialogue", speaker: "商人", text: "陆老板，您说了算！" },
+    { time: 10, type: "narration", text: "你是废墟上的——商业之王。" }
+  ],
+  "ending4": [
+    { time: 1, type: "narration", text: "你没有建立庞大的势力，但你在末世中独自存活了下来。" },
+    { time: 6, type: "dialogue", speaker: "陆寒", text: "也许，孤独才是末日的常态。" },
+    { time: 10, type: "narration", text: "孤狼，也能在寒霜中前行。" }
+  ]
+};
+
+function getSubtitleKeyFromPath(path) {
+  if (!path) return null;
+  const match = path.match(/\/([^\/]+)\.mp4$/);
+  return match ? match[1] : null;
+}
+
+/* ===================== 剧情数据（PDF 4层二叉树） ===================== */
 const defaultStory = {
-  start: "c1n1",
+  start: "choice1",
   nodes: {
-    c1n1: {
-      chapter: "第一章 寒潮前72小时",
-      title: "废墟抉择",
+    choice1: {
+      chapter: "第一章 废墟抉择",
+      title: "废墟中的抉择",
       media: "./assets/scenes/safehouse-awakening.png",
       visual: "被冰雪覆盖的废墟中，远处传来微弱的呼救声。你握紧了手中的武器，资源所剩无几。",
       dialogue: "寒潮后的世界，每一个选择都关乎生死。救助他人可能会消耗宝贵的资源，但独自前行也许会让你失去最后的人性。",
@@ -15,261 +93,149 @@ const defaultStory = {
       choices: [
         {
           text: "A: 救助被困的幸存者",
-          next: "c1n2",
+          next: "choice2",
           video: "./videos/02A.mp4",
-          effects: { 人口: 8, 声望: 9, 领袖值: 7, 资源: -6 },
-          shelter: { 居住舱: 1 },
-          item: "幸存者信任",
-          relation: { 林薇: 5 },
-          achievement: "第一道秩序"
+          effects: { 人口: 8, 声望: 10, 资源: -5 }
         },
         {
           text: "B: 独自搜寻资源，保存实力",
-          next: "c1n3",
+          next: "choice2",
           video: "./videos/02B.mp4",
-          effects: { 资源: 18, 声望: -5, 黑化值: 6, 武力: 4 },
-          item: "军用压缩粮",
-          achievement: "冷血库存"
+          effects: { 资源: 10, 声望: -5 }
         }
       ]
     },
-    c1n2: {
-      chapter: "第一章 寒潮前72小时",
-      title: "超市封仓",
-      media: "./assets/scenes/warehouse-lockdown.png",
-      visual: "仓库卷帘门落下，保安和市民同时冲向最后一批压缩食品。",
-      dialogue: "你知道再过五小时，城内所有物流会被军方接管。眼前的冲突，是树立领袖声望的第一场试炼。",
+    choice2: {
+      chapter: "第二章 据点建设",
+      title: "立足之地",
+      media: "./assets/scenes/metro-shelter.png",
+      visual: "你需要一个安全的据点来度过这个冬天。建立避难所可以收容更多幸存者，但占领军火库能让你拥有更强的武力。",
+      dialogue: "在这个弱肉强食的世界，仁慈和力量，哪一个更重要？",
       risk: "高",
-      countdown: "66:30:12",
+      countdown: "48:00:00",
       choices: [
         {
-          text: "公开分配规则，招募守仓志愿者",
-          next: "c2n1",
-          effects: { 人口: 8, 声望: 9, 领袖值: 7, 资源: 6 },
-          relation: { 赵擎: 3, 林薇: 2 },
-          achievement: "第一道秩序"
+          text: "A: 建立避难所，收容难民",
+          next: "choice3",
+          video: "./videos/03A.mp4",
+          effects: { 人口: 15, 声望: 5, 资源: -10 }
         },
         {
-          text: "趁乱锁仓，只带走关键物资",
-          next: "c2n2",
-          effects: { 资源: 18, 声望: -9, 黑化值: 9, 武力: 4 },
-          item: "军用压缩粮",
-          achievement: "冷血库存"
+          text: "B: 占领军火库，武装自己",
+          next: "choice3",
+          video: "./videos/03B.mp4",
+          effects: { 武力: 20, 资源: 15, 声望: -10 }
         }
       ]
     },
-    c1n3: {
-      chapter: "第一章 寒潮前72小时",
-      title: "气象局暗线",
+    choice3: {
+      chapter: "第三章 势力扩张",
+      title: "合纵连横",
+      media: "./assets/scenes/warehouse-lockdown.png",
+      visual: "周围的势力开始注意到你的存在。你可以选择与他们联合，也可以直接吞并他们。",
+      dialogue: "盟友还是敌人？在这个末世，今天的盟友可能就是明天的叛徒。",
+      risk: "高",
+      countdown: "24:00:00",
+      choices: [
+        {
+          text: "A: 联合抵御，共抗寒潮",
+          next: "choice4",
+          video: "./videos/04A.mp4",
+          effects: { 声望: 20, 人口: 10 }
+        },
+        {
+          text: "B: 吞并扩张，一统废墟",
+          next: "choice4",
+          video: "./videos/04B.mp4",
+          effects: { 武力: 15, 资源: 20, 声望: -15 }
+        }
+      ]
+    },
+    choice4: {
+      chapter: "第四章 最终抉择",
+      title: "王者之路",
       media: "./assets/scenes/safehouse-awakening.png",
-      visual: "屏幕上出现红色风暴带，寒潮中心像一把刀切向北境。",
-      dialogue: "模型证明官方通告至少晚了三十六小时。你可以拯救更多人，也可以用信息差换来绝对控制权。",
-      risk: "中",
-      countdown: "68:44:20",
-      choices: [
-        {
-          text: "向社区医生林薇透露真相",
-          next: "c2n1",
-          effects: { 声望: 6, 领袖值: 5, 黑化值: -2 },
-          relation: { 林薇: 10 },
-          item: "医疗联络名单"
-        },
-        {
-          text: "出售模型换取武装车辆",
-          next: "c2n2",
-          effects: { 武力: 12, 资源: 6, 黑化值: 7, 声望: -4 },
-          shelter: { 武装岗哨: 1 },
-          item: "雪地装甲车"
-        }
-      ]
-    },
-    c2n1: {
-      chapter: "第二章 建立据点",
-      title: "北境庇护所",
-      media: "./assets/scenes/metro-shelter.png",
-      visual: "废弃地铁站被改造成地下堡垒，暖光沿着铁轨一盏盏亮起。",
-      dialogue: "第一批幸存者进入据点。你必须决定庇护所的制度：以信任换协作，或以铁律换效率。",
-      risk: "中",
-      countdown: "31:09:45",
-      choices: [
-        {
-          text: "建立议事会，关键任务公开投票",
-          next: "c3n1",
-          effects: { 人口: 10, 声望: 11, 领袖值: 6, 黑化值: -4 },
-          relation: { 林薇: 5, 赵擎: -2 },
-          shelter: { 居住舱: 1 },
-          achievement: "微光议事会"
-        },
-        {
-          text: "签署寒霜戒律，违令者驱逐",
-          next: "c3n2",
-          effects: { 武力: 8, 领袖值: 9, 黑化值: 8, 声望: -2 },
-          relation: { 赵擎: 7, 林薇: -4 },
-          achievement: "寒霜戒律"
-        }
-      ]
-    },
-    c2n2: {
-      chapter: "第二章 建立据点",
-      title: "铁门之后",
-      media: "./assets/scenes/metro-shelter.png",
-      visual: "厚重防爆门关闭，门外的人群拍打金属，声音逐渐被风雪吞没。",
-      dialogue: "庇护所资源充足，却开始流传你抛弃弱者的传言。力量可以让人服从，但不一定让人追随。",
-      risk: "高",
-      countdown: "28:12:03",
-      choices: [
-        {
-          text: "开放临时名额，要求新人完成试炼",
-          next: "c3n1",
-          effects: { 人口: 6, 武力: 5, 声望: 3, 黑化值: -1 },
-          item: "试炼名册"
-        },
-        {
-          text: "启动黑名单制度，清理潜在叛徒",
-          next: "c3n2",
-          effects: { 武力: 10, 黑化值: 12, 人口: -4, 领袖值: 6 },
-          relation: { 赵擎: 8 },
-          achievement: "黑名单"
-        }
-      ]
-    },
-    c3n1: {
-      chapter: "第三章 招募幸存者",
-      title: "医生与机械师",
-      media: "./assets/scenes/metro-shelter.png",
-      visual: "林薇带来医疗队，赵擎带来武装人员，两股力量在指挥室里对峙。",
-      dialogue: "救治伤员会消耗物资，训练武装会提高生存率。你的选择将决定北境庇护所的气质。",
-      risk: "中",
-      countdown: "09:48:11",
-      choices: [
-        {
-          text: "优先救治冻伤者，稳定民心",
-          next: "ending-light",
-          effects: { 声望: 12, 人口: 8, 资源: -8, 黑化值: -6 },
-          relation: { 林薇: 8 },
-          shelter: { 医疗站: 1 },
-          ending: "微光领主"
-        },
-        {
-          text: "会员支线：派遣精锐寻找前世密钥",
-          next: "hidden-key",
-          vip: true,
-          effects: { 武力: 6, 领袖值: 8, 资源: -5 },
-          item: "前世密钥"
-        }
-      ]
-    },
-    c3n2: {
-      chapter: "第四章 资源战争",
-      title: "雪夜夺仓",
-      media: "./assets/scenes/warehouse-lockdown.png",
-      visual: "装甲车碾过冰层，敌对势力的探照灯扫过你的队伍。",
-      dialogue: "北境粮仓被另一支势力占据。你可以谈判换取联盟，也可以在暴风雪里发动突袭。",
+      visual: "你站在了废墟的顶端。是建立一个秩序井然的新世界，还是继续用武力征服一切？",
+      dialogue: "这是你最后的抉择。你的决定将定义这片废墟的未来。",
       risk: "极高",
-      countdown: "02:17:39",
+      countdown: "00:00:00",
       choices: [
         {
-          text: "以寒潮模型交换联盟席位",
-          next: "ending-alliance",
-          effects: { 声望: 10, 资源: 9, 黑化值: -3, 领袖值: 5 },
-          relation: { 林薇: 3, 赵擎: -3 },
-          ending: "北境联盟"
+          text: "A: 建立秩序，重塑文明",
+          next: "ending",
+          video: "./videos/05A.mp4",
+          effects: { 声望: 30, 人口: 20 },
+          judge: true
         },
         {
-          text: "发动突袭，夺取粮仓控制权",
-          next: "ending-throne",
-          effects: { 资源: 20, 武力: 16, 黑化值: 18, 人口: -8 },
-          relation: { 赵擎: 7 },
-          ending: "寒霜王座"
+          text: "B: 继续扩张，以武止戈",
+          next: "ending",
+          video: "./videos/05B.mp4",
+          effects: { 武力: 30, 资源: 20 },
+          judge: true
         }
       ]
     },
-    "hidden-key": {
-      chapter: "隐藏支线",
-      title: "前世密钥",
-      media: "./assets/scenes/safehouse-awakening.png",
-      visual: "密钥打开一段前世影像：真正引发叛乱的人，就在第一批幸存者名单中。",
-      dialogue: "你获得一次回溯机会，可以改写某个关键选择。但知道未来越多，越容易把人当成棋子。",
-      risk: "未知",
-      countdown: "??:??:??",
-      choices: [
-        {
-          text: "公开密钥内容，要求所有人共同审判",
-          next: "ending-alliance",
-          effects: { 声望: 12, 黑化值: -8, 领袖值: 4 },
-          achievement: "破冰审判",
-          ending: "北境联盟"
-        },
-        {
-          text: "独自利用密钥，提前清除叛乱源头",
-          next: "ending-throne",
-          effects: { 黑化值: 16, 武力: 10, 声望: -8 },
-          achievement: "无声清算",
-          ending: "寒霜王座"
-        }
-      ]
-    },
-    "ending-light": {
+    "ending1": {
       chapter: "结局",
-      title: "微光领主",
+      title: "寒霜帝王",
       media: "./assets/scenes/metro-shelter.png",
-      visual: "暴雪覆盖地表，地下庇护所仍亮着一排排温暖灯光。",
-      dialogue: "你没有成为最强的人，却让最多的人活过了第一场寒潮。",
-      ending: "微光领主",
+      visual: "庇护所大厅里，数百人举起火把，冰封城市的中心升起你的旗帜。",
+      dialogue: "从重生那天起，我就知道——我要建立一个帝国。现在，我做到了。人们尊称你为——寒霜帝王。",
+      ending: "寒霜帝王",
       risk: "终局",
       countdown: "00:00:00",
-      choices: [{ text: "重新开始", next: "c1n1", reset: true }]
+      choices: [{ text: "重新开始", next: "choice1", reset: true }]
     },
-    "ending-alliance": {
+    "ending2": {
       chapter: "结局",
-      title: "北境联盟",
-      media: "./assets/scenes/metro-shelter.png",
-      visual: "多个庇护所旗帜在风雪中升起，新的秩序从冰原上建立。",
-      dialogue: "你用信息、信任与让步换来了联盟。寒潮还会继续，但人类不再孤立。",
-      ending: "北境联盟",
-      risk: "终局",
-      countdown: "00:00:00",
-      choices: [{ text: "重新开始", next: "c1n1", reset: true }]
-    },
-    "ending-throne": {
-      chapter: "结局",
-      title: "寒霜王座",
+      title: "暗影领主",
       media: "./assets/scenes/warehouse-lockdown.png",
-      visual: "所有频道都播放你的命令，北境在钢铁纪律下幸存。",
-      dialogue: "没有人敢背叛你。也没有人能确定，陆寒是否仍是那个想拯救世界的人。",
-      ending: "寒霜王座",
+      visual: "巡逻队在雪夜中低头让路，所有频道都沉默等待你的命令。",
+      dialogue: "他们害怕我，这就够了。在绝对武力面前，没有人敢反抗。你成为了——暗影领主。",
+      ending: "暗影领主",
       risk: "终局",
       countdown: "00:00:00",
-      choices: [{ text: "重新开始", next: "c1n1", reset: true }]
+      choices: [{ text: "重新开始", next: "choice1", reset: true }]
+    },
+    "ending3": {
+      chapter: "结局",
+      title: "商业之王",
+      media: "./assets/scenes/warehouse-lockdown.png",
+      visual: "药品、燃料和粮食在交易大厅里排成长龙，所有账本最终都指向你。",
+      dialogue: "资源就是权力。而我，掌握了所有的资源。在废墟之上，你是无可争议的——商业之王。",
+      ending: "商业之王",
+      risk: "终局",
+      countdown: "00:00:00",
+      choices: [{ text: "重新开始", next: "choice1", reset: true }]
+    },
+    "ending4": {
+      chapter: "结局",
+      title: "孤狼幸存者",
+      media: "./assets/scenes/safehouse-awakening.png",
+      visual: "雪原上只有一串脚印，你背着包，独自走向下一座废城。",
+      dialogue: "也许，孤独才是末日的常态。但你活下来了。在这片废墟上，活着本身就是一种胜利。",
+      ending: "孤狼幸存者",
+      risk: "终局",
+      countdown: "00:00:00",
+      choices: [{ text: "重新开始", next: "choice1", reset: true }]
     }
   }
 };
 
 const initialState = {
-  nodeId: "c1n1",
-  selectedNode: "c1n1",
+  nodeId: "choice1",
+  selectedNode: "choice1",
   vip: false,
   stats: {
-    资源: 42,
-    人口: 18,
-    武力: 24,
-    声望: 35,
-    寒意值: 61,
-    领袖值: 39,
-    黑化值: 12
+    资源: 20,
+    人口: 10,
+    武力: 15,
+    声望: 5
   },
-  relations: {
-    林薇: 45,
-    赵擎: 38,
-    周砚: 30
-  },
-  shelter: {
-    仓储区: 1,
-    医疗站: 0,
-    武装岗哨: 0,
-    居住舱: 1
-  },
-  bag: ["旧世界记忆"],
+  relations: {},
+  shelter: {},
+  bag: [],
   achievements: [],
   endings: [],
   completedTasks: [],
@@ -285,8 +251,9 @@ const modules = {
 
 const taskList = [
   { id: "fuel", title: "建立三日燃料储备", need: "资源 >= 50", test: s => s.stats.资源 >= 50 },
-  { id: "med", title: "开放医疗站", need: "医疗站 Lv.1", test: s => s.shelter.医疗站 >= 1 },
-  { id: "order", title: "形成可执行秩序", need: "领袖值 >= 50", test: s => s.stats.领袖值 >= 50 },
+  { id: "pop", title: "人口突破50", need: "人口 >= 50", test: s => s.stats.人口 >= 50 },
+  { id: "power", title: "武力称霸", need: "武力 >= 60", test: s => s.stats.武力 >= 60 },
+  { id: "fame", title: "声望远播", need: "声望 >= 50", need: "声望 >= 50", test: s => s.stats.声望 >= 50 },
   { id: "ending", title: "解锁任意终局", need: "完成一个结局", test: s => s.endings.length > 0 }
 ];
 
@@ -340,7 +307,7 @@ function render() {
 }
 
 function renderBasicStats() {
-  const basic = ["资源", "人口", "武力", "声望", "寒意值"];
+  const basic = ["资源", "人口", "武力", "声望"];
   document.getElementById("basicStats").innerHTML = basic.map(name => {
     const value = clamp(state.stats[name]);
     return `<span class="basic-chip">${name}<div class="basic-chip-bar"><span style="width:${value}%"></span></div><b>${value}</b></span>`;
@@ -349,7 +316,7 @@ function renderBasicStats() {
 
 function renderStats() {
   document.getElementById("stats").innerHTML = Object.entries(state.stats).map(([name, value]) => {
-    const color = name === "黑化值" ? "var(--red)" : name === "寒意值" ? "var(--ice)" : "linear-gradient(90deg, var(--ice), var(--amber))";
+    const color = name === "声望" ? "linear-gradient(90deg, var(--green), var(--ice))" : "linear-gradient(90deg, var(--ice), var(--amber))";
     return `<div class="stat-row">
       <span>${name}</span>
       <div class="bar"><span style="width:${clamp(value)}%;background:${color}"></span></div>
@@ -359,7 +326,12 @@ function renderStats() {
 }
 
 function renderRelations() {
-  document.getElementById("relations").innerHTML = Object.entries(state.relations).map(([name, value]) => `
+  const rels = Object.entries(state.relations);
+  if (rels.length === 0) {
+    document.getElementById("relations").innerHTML = "<div class='relation'><strong><span>暂无关系</span><span>--</span></strong></div>";
+    return;
+  }
+  document.getElementById("relations").innerHTML = rels.map(([name, value]) => `
     <div class="relation">
       <strong><span>${name}</span><span>${clamp(value)}</span></strong>
       <div class="bar"><span style="width:${clamp(value)}%;background:linear-gradient(90deg,var(--green),var(--ice))"></span></div>
@@ -399,9 +371,14 @@ function renderPlay() {
   }).join("");
   if (lastRenderedNode !== state.nodeId) {
     lastRenderedNode = state.nodeId;
-    // 第一个节点保持暂停状态，不重新准备播放
-    if (state.nodeId !== story.start) {
-      prepareScenePlayback();
+    const cur = node();
+    // 结局节点和选择节点都直接显示选项（旁白已在分支视频字幕中传达）
+    if (cur.ending || state.nodeId === story.start) {
+      sceneMode = "paused";
+      applyPlaybackState();
+    } else {
+      sceneMode = "paused";
+      applyPlaybackState();
     }
   } else {
     applyPlaybackState();
@@ -420,12 +397,17 @@ function summarizeChoice(choice, locked) {
 }
 
 function renderShelter() {
-  document.getElementById("baseMap").innerHTML = Object.entries(state.shelter).map(([name, level]) => `
-    <div class="module">
-      <strong>${name} <span class="level">Lv.${level}</span></strong>
-      <p>${modules[name]}</p>
-    </div>
-  `).join("");
+  const shelterEntries = Object.entries(state.shelter);
+  if (shelterEntries.length === 0) {
+    document.getElementById("baseMap").innerHTML = "<div class='module'><strong>暂无设施</strong><p>你的势力尚未建立任何设施。</p></div>";
+  } else {
+    document.getElementById("baseMap").innerHTML = shelterEntries.map(([name, level]) => `
+      <div class="module">
+        <strong>${name} <span class="level">Lv.${level}</span></strong>
+        <p>${modules[name]}</p>
+      </div>
+    `).join("");
+  }
 
   document.getElementById("tasks").innerHTML = taskList.map(task => {
     const done = task.test(state);
@@ -501,7 +483,6 @@ function renderPanel() {
       <div class="panel-card">势力规模：${state.stats.人口} 人 / 武力 ${state.stats.武力} / 声望 ${state.stats.声望}</div>
       <div class="panel-card">成长记录：已完成 ${state.completedTasks.length} 个生存任务，已进入 ${state.endings.length} 个结局。</div>
       <div class="panel-card"><strong>完整属性板</strong><br>${Object.entries(state.stats).map(([key, value]) => `${key}：${value}`).join(" / ")}</div>
-      <div class="panel-card"><strong>NPC 好感</strong><br>${Object.entries(state.relations).map(([key, value]) => `${key}：${value}`).join(" / ")}</div>
     `,
     bag: state.bag.length ? state.bag.map(item => `<div class="panel-card">${item}</div>`).join("") : "<div class='panel-card'>背包为空。</div>",
     achievements: state.achievements.length ? state.achievements.map(item => `<div class="panel-card">${item}</div>`).join("") : "<div class='panel-card'>暂无成就。</div>",
@@ -515,9 +496,8 @@ function renderPanel() {
 }
 
 function getTitle() {
-  if (state.stats.黑化值 >= 70) return "寒霜暴君";
-  if (state.stats.声望 >= 60) return "北境盟主";
-  if (state.stats.领袖值 >= 55) return "重生领主";
+  if (state.stats.声望 >= 50) return "北境盟主";
+  if (state.stats.武力 >= 45) return "重生领主";
   return "灾前预备者";
 }
 
@@ -550,6 +530,7 @@ function showTitleScreen() {
   }
 }
 
+/* ===================== 开场电影 ===================== */
 function playOpeningCinematic() {
   hideTitleScreen();
   const cinematic = document.getElementById("openingCinematic");
@@ -615,6 +596,7 @@ function finishOpeningCinematic() {
   playScene01Cinematic();
 }
 
+/* ===================== 第一段剧情视频（scene_01） ===================== */
 function playScene01Cinematic() {
   const cinematic = document.getElementById("sceneCinematic");
   const video = document.getElementById("sceneCinematicVideo");
@@ -627,12 +609,29 @@ function playScene01Cinematic() {
   cinematic.classList.add("active");
   video.currentTime = 0;
 
-  // 角色对话字幕：第9秒显示
-  const dialogueData = {
-    speaker: "陆寒",
-    text: "重生了，我重生了，我一定要成为末日最强者",
-    triggerTime: 9
-  };
+  // 字幕系统：根据时间轴显示旁白和对话
+  const subs = subtitleData["scene_01"] || [];
+  let currentSubIndex = -1;
+  let timeUpdateHandler = null;
+
+  if (subs.length > 0) {
+    timeUpdateHandler = () => {
+      const t = video.currentTime;
+      for (let i = subs.length - 1; i >= 0; i--) {
+        if (t >= subs[i].time) {
+          if (currentSubIndex !== i) {
+            currentSubIndex = i;
+            showSceneSubtitle(subs[i]);
+          }
+          break;
+        }
+      }
+    };
+    video.addEventListener("timeupdate", timeUpdateHandler);
+  }
+
+  // 保留原有的角色对话逻辑作为后备
+  const dialogueData = { speaker: "陆寒", text: "重生了，我重生了，我一定要成为末日最强者", triggerTime: 9 };
   let dialogueShown = false;
 
   video.addEventListener("timeupdate", function onTimeUpdate() {
@@ -642,22 +641,47 @@ function playScene01Cinematic() {
     }
   });
 
+  const cleanup = () => {
+    if (timeUpdateHandler) video.removeEventListener("timeupdate", timeUpdateHandler);
+    hideSceneSubtitle();
+    hideCharacterDialogue();
+  };
+
   video.play().catch(err => {
     console.log("第二段视频播放失败:", err);
+    cleanup();
     finishScene01Cinematic();
   });
 
   video.onended = () => {
-    hideCharacterDialogue();
+    cleanup();
     finishScene01Cinematic();
   };
 
   video.onerror = () => {
-    hideCharacterDialogue();
+    cleanup();
     finishScene01Cinematic();
   };
 }
 
+/* 场景视频字幕覆盖层 */
+function showSceneSubtitle(sub) {
+  let overlay = document.getElementById("sceneSubtitleOverlay");
+  if (!overlay) return;
+  if (sub.type === "dialogue") {
+    overlay.innerHTML = `<span style="display:block;color:var(--ice);font-size:13px;margin-bottom:4px;font-weight:700;">${sub.speaker}</span>${sub.text}`;
+  } else {
+    overlay.textContent = sub.text;
+  }
+  overlay.style.opacity = "1";
+}
+
+function hideSceneSubtitle() {
+  const overlay = document.getElementById("sceneSubtitleOverlay");
+  if (overlay) overlay.style.opacity = "0";
+}
+
+/* 角色对话字幕（左下角） */
 function showCharacterDialogue(speaker, text, duration) {
   hideCharacterDialogue();
   const container = document.createElement("div");
@@ -733,6 +757,7 @@ function showGameSubtitle(text, duration = 4000) {
   }, interval);
 }
 
+/* ===================== 选择与分支视频 ===================== */
 function choose(index) {
   if (sceneMode !== "paused") return;
   const current = node();
@@ -744,7 +769,8 @@ function choose(index) {
   }
 
   if (choice.video) {
-    playBranchCinematic(choice.video, () => applyChoiceEffects(choice));
+    const subKey = getSubtitleKeyFromPath(choice.video);
+    playBranchCinematic(choice.video, () => applyChoiceEffects(choice), subKey);
     return;
   }
 
@@ -758,13 +784,11 @@ function applyChoiceEffects(choice) {
     story = loadJson(STORAGE_STORY, window.FROST_DEFAULT_STORY || defaultStory);
   } else {
     if (choice.judge) {
-      state.nodeId = determineEnding();
-      enterNode(state.nodeId);
-      saveJson(STORAGE_STATE, state);
-      render();
+      const endingId = determineEnding();
+      playEndingCinematic(endingId);
       return;
     }
-    applyEffects(choice.effects);
+    applyEffects(choice.effects || {});
     applyShelter(choice.shelter);
     applyRelations(choice.relation);
     addUnique("bag", choice.item);
@@ -779,7 +803,8 @@ function applyChoiceEffects(choice) {
   render();
 }
 
-function playBranchCinematic(videoSrc, onComplete) {
+/* ===================== 分支视频播放（增强字幕） ===================== */
+function playBranchCinematic(videoSrc, onComplete, subtitleKey) {
   const cinematic = document.getElementById("branchCinematic");
   const video = document.getElementById("branchCinematicVideo");
   if (!cinematic || !video) {
@@ -791,21 +816,109 @@ function playBranchCinematic(videoSrc, onComplete) {
   video.src = videoSrc;
   video.currentTime = 0;
 
+  // 字幕系统
+  let timeUpdateHandler = null;
+  const subs = subtitleKey ? (subtitleData[subtitleKey] || []) : [];
+  let currentSubIndex = -1;
+
+  if (subs.length > 0) {
+    timeUpdateHandler = () => {
+      const t = video.currentTime;
+      for (let i = subs.length - 1; i >= 0; i--) {
+        if (t >= subs[i].time) {
+          if (currentSubIndex !== i) {
+            currentSubIndex = i;
+            updateBranchSubtitle(subs[i]);
+          }
+          break;
+        }
+      }
+    };
+    video.addEventListener("timeupdate", timeUpdateHandler);
+  }
+
+  const cleanup = () => {
+    if (timeUpdateHandler) video.removeEventListener("timeupdate", timeUpdateHandler);
+    hideBranchSubtitle();
+  };
+
   video.play().catch(err => {
     console.log("分支视频播放失败:", err);
+    cleanup();
     cinematic.classList.remove("active");
     onComplete();
   });
 
   video.onended = () => {
+    cleanup();
     cinematic.classList.remove("active");
     onComplete();
   };
 
   video.onerror = () => {
+    cleanup();
     cinematic.classList.remove("active");
     onComplete();
   };
+}
+
+function updateBranchSubtitle(sub) {
+  let el = document.getElementById("branchSubtitle");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "branchSubtitle";
+    el.className = "subtitle-overlay";
+    el.style.zIndex = "5";
+    el.style.transition = "opacity 0.3s ease";
+    document.getElementById("branchCinematic")?.appendChild(el);
+  }
+  if (!sub) {
+    el.style.opacity = "0";
+    return;
+  }
+  if (sub.type === "dialogue") {
+    el.innerHTML = `<span style="display:block;color:var(--ice);font-size:13px;margin-bottom:4px;font-weight:700;">${sub.speaker}</span>${sub.text}`;
+  } else {
+    el.innerHTML = sub.text;
+  }
+  el.style.opacity = "1";
+}
+
+function hideBranchSubtitle() {
+  const el = document.getElementById("branchSubtitle");
+  if (el) el.style.opacity = "0";
+}
+
+/* ===================== 结局视频播放 ===================== */
+function playEndingCinematic(endingId) {
+  const ending = story.nodes[endingId];
+  if (!ending) {
+    state.nodeId = endingId;
+    saveJson(STORAGE_STATE, state);
+    render();
+    return;
+  }
+
+  // 如果结局有视频，先播放结局视频
+  const endingVideoPath = `./videos/${endingId}.mp4`;
+  playBranchCinematic(endingVideoPath, () => {
+    state.nodeId = endingId;
+    enterNode(endingId);
+    addUnique("endings", ending.ending);
+    saveJson(STORAGE_STATE, state);
+    render();
+    toast(`结局解锁：${ending.ending}`);
+  }, endingId);
+}
+
+/* ===================== 结局判定（PDF优先级） ===================== */
+function determineEnding() {
+  const s = state.stats;
+  // 优先级：寒霜帝王 > 暗影领主 > 商业之王 > 孤狼幸存者
+  if (s.声望 >= 50 && s.人口 >= 45) return "ending1";
+  if (s.武力 >= 60 && s.资源 >= 60) return "ending2";
+  if (s.资源 >= 40 && s.人口 >= 30) return "ending3";
+  return "ending4";
 }
 
 function enterNode(nodeId) {
@@ -820,13 +933,6 @@ function enterNode(nodeId) {
   addUnique("bag", target.item);
   addUnique("achievements", target.achievement);
   addUnique("endings", target.ending);
-}
-
-function determineEnding() {
-  if (state.stats.人口 > 80 && state.stats.声望 > 70) return "ending-emperor";
-  if (state.stats.武力 > 80 && state.stats.资源 > 60) return "ending-shadow";
-  if (state.stats.资源 > 80 && state.stats.声望 > 60) return "ending-merchant";
-  return "ending-lonewolf";
 }
 
 function prepareScenePlayback() {
@@ -1010,7 +1116,7 @@ function addNode() {
     dialogue: "写入第一人称对白或旁白。",
     risk: "中",
     countdown: "??:??:??",
-    choices: [{ text: "返回寒潮前72小时", next: story.start, effects: { 领袖值: 1 } }]
+    choices: [{ text: "返回寒潮前72小时", next: story.start, effects: { 资源: 1 } }]
   };
   state.selectedNode = id;
   saveJson(STORAGE_STORY, story);
@@ -1027,8 +1133,8 @@ function exportStory() {
 }
 
 function autoPlan() {
-  const plan = state.stats.黑化值 > 50 ? "武装岗哨" : state.stats.资源 < 50 ? "仓储区" : "医疗站";
-  state.shelter[plan] += 1;
+  const plan = state.stats.资源 < 50 ? "仓储区" : "医疗站";
+  state.shelter[plan] = (state.shelter[plan] || 0) + 1;
   state.stats.资源 = clamp(state.stats.资源 - 6);
   saveJson(STORAGE_STATE, state);
   toast(`已调度工程队升级 ${plan}。`);
@@ -1043,6 +1149,7 @@ function toast(message) {
   toast.timer = setTimeout(() => target.classList.remove("show"), 2400);
 }
 
+/* ===================== 事件监听 ===================== */
 document.addEventListener("click", event => {
   const button = event.target.closest("button");
   if (!button) return;
@@ -1108,7 +1215,6 @@ document.addEventListener("click", event => {
   if (action === "addNode") addNode();
   if (action === "exportStory") exportStory();
   if (action === "autoPlan") autoPlan();
-  if (action === "choose") {
   if (action === "resetState") {
     state = structuredClone(window.FROST_INITIAL_STATE || initialState);
     saveJson(STORAGE_STATE, state);

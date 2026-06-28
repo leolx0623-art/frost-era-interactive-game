@@ -6,27 +6,28 @@ const defaultStory = {
   nodes: {
     c1n1: {
       chapter: "第一章 寒潮前72小时",
-      title: "重生醒来",
+      title: "废墟抉择",
       media: "./assets/scenes/safehouse-awakening.png",
-      visual: "你在安全屋地板上惊醒，窗外城市仍灯火通明。墙上日历显示：全球寒潮爆发前三天。",
-      dialogue: "上一世，陆寒死在零下七十度的撤离路上。这一次，你带着全部记忆回来了。第一件事，决定庇护所的核心路线。",
-      risk: "中",
-      countdown: "72:00:00",
+      visual: "被冰雪覆盖的废墟中，远处传来微弱的呼救声。你握紧了手中的武器，资源所剩无几。",
+      dialogue: "寒潮后的世界，每一个选择都关乎生死。救助他人可能会消耗宝贵的资源，但独自前行也许会让你失去最后的人性。",
+      risk: "极高",
+      countdown: "71:58:33",
       choices: [
         {
-          text: "立刻囤积燃料和医疗物资",
+          text: "A: 救助被困的幸存者",
           next: "c1n2",
-          effects: { 资源: 14, 声望: -3, 领袖值: 4 },
-          shelter: { 仓储区: 1, 医疗站: 1 },
-          item: "柴油发电机",
-          relation: { 林薇: 4 }
+          effects: { 人口: 8, 声望: 9, 领袖值: 7, 资源: -6 },
+          shelter: { 居住舱: 1 },
+          item: "幸存者信任",
+          relation: { 林薇: 5 },
+          achievement: "第一道秩序"
         },
         {
-          text: "先黑入气象局，拿到寒潮模型",
+          text: "B: 独自搜寻资源，保存实力",
           next: "c1n3",
-          effects: { 资源: -5, 武力: 2, 声望: 5, 黑化值: 3 },
-          item: "寒潮路径图",
-          achievement: "预知者"
+          effects: { 资源: 18, 声望: -5, 黑化值: 6, 武力: 4 },
+          item: "军用压缩粮",
+          achievement: "冷血库存"
         }
       ]
     },
@@ -370,6 +371,10 @@ function renderPlay() {
   document.getElementById("episodeLabel").textContent = `${current.chapter} / ${state.nodeId}`;
   document.getElementById("riskLabel").textContent = `寒意警戒：${current.risk || "中"}`;
   document.getElementById("countdown").textContent = current.countdown || "72:00:00";
+  const chapterLabel = document.getElementById("chapterLabel");
+  const sceneLabel = document.getElementById("sceneLabel");
+  if (chapterLabel) chapterLabel.textContent = current.chapter.split(" ")[0] || "第一章";
+  if (sceneLabel) sceneLabel.textContent = current.title;
   const media = current.media || "./assets/frost-command-bg.png";
   if (media.endsWith('.mp4') || media.endsWith('.webm')) {
     document.getElementById("sceneImg").style.display = 'none';
@@ -392,7 +397,10 @@ function renderPlay() {
   }).join("");
   if (lastRenderedNode !== state.nodeId) {
     lastRenderedNode = state.nodeId;
-    prepareScenePlayback();
+    // 第一个节点保持暂停状态，不重新准备播放
+    if (state.nodeId !== story.start) {
+      prepareScenePlayback();
+    }
   } else {
     applyPlaybackState();
   }
@@ -601,6 +609,70 @@ function finishOpeningCinematic() {
   if (cinematic) {
     cinematic.classList.remove("active");
   }
+  // 开场结束后自动播放第二段视频
+  playScene01Cinematic();
+}
+
+function playScene01Cinematic() {
+  const cinematic = document.getElementById("sceneCinematic");
+  const video = document.getElementById("sceneCinematicVideo");
+  const subtitle = document.getElementById("sceneSubtitleOverlay");
+  if (!cinematic || !video || !subtitle) {
+    gameStarted = true;
+    enterMainGame();
+    return;
+  }
+
+  cinematic.classList.add("active");
+  subtitle.textContent = "";
+  video.currentTime = 0;
+
+  // 第二段视频字幕 - 用户提供具体字幕后可在此修改
+  const subtitleText = "废墟中，每一步都可能是陷阱。但我必须前进，为了活下去……也为了那些还在等待希望的人。";
+  const duration = Math.min(12000, Math.max(6000, subtitleText.length * 110));
+
+  video.play().catch(err => {
+    console.log("第二段视频播放失败:", err);
+    finishScene01Cinematic();
+  });
+
+  startSceneSubtitleTypewriter(subtitleText, duration);
+
+  video.onended = () => {
+    finishScene01Cinematic();
+  };
+
+  video.onerror = () => {
+    finishScene01Cinematic();
+  };
+}
+
+function startSceneSubtitleTypewriter(text, duration) {
+  stopSubtitleTypewriter();
+  const target = document.getElementById("sceneSubtitleOverlay");
+  if (!target) return;
+  target.textContent = "";
+  let index = 0;
+  const interval = Math.max(30, Math.min(80, Math.floor(duration / Math.max(text.length, 1))));
+  subtitleTimer = setInterval(() => {
+    index += 1;
+    target.textContent = text.slice(0, index);
+    if (index >= text.length) stopSubtitleTypewriter();
+  }, interval);
+}
+
+function finishScene01Cinematic() {
+  const cinematic = document.getElementById("sceneCinematic");
+  const video = document.getElementById("sceneCinematicVideo");
+  if (video) {
+    video.pause();
+    video.onended = null;
+    video.onerror = null;
+  }
+  stopSubtitleTypewriter();
+  if (cinematic) {
+    cinematic.classList.remove("active");
+  }
   gameStarted = true;
   enterMainGame();
 }
@@ -609,7 +681,13 @@ function enterMainGame() {
   document.querySelector(".command-bar").style.display = "";
   document.querySelector(".workspace").style.display = "";
   render();
-  prepareScenePlayback();
+  // 第一个节点直接显示为暂停状态，展示选项
+  if (state.nodeId === story.start) {
+    sceneMode = "paused";
+    applyPlaybackState();
+  } else {
+    prepareScenePlayback();
+  }
 }
 
 function showGameSubtitle(text, duration = 4000) {
@@ -822,6 +900,17 @@ function switchView(view) {
   document.querySelectorAll(".view").forEach(item => item.classList.remove("active"));
   document.querySelectorAll("[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === view));
   document.getElementById(`view-${view}`).classList.add("active");
+  // 控制外部 command-bar 显示/隐藏
+  const commandBar = document.querySelector(".command-bar");
+  const workspace = document.querySelector(".workspace");
+  if (view === "play") {
+    if (commandBar) commandBar.style.display = "none";
+    if (workspace) workspace.style.padding = "0";
+  } else {
+    if (commandBar) commandBar.style.display = "";
+    if (workspace) workspace.style.padding = "";
+  }
+  if (view === "play") prepareScenePlayback();
 }
 
 function saveNode(event) {
@@ -977,6 +1066,12 @@ updateCompletedTasks();
 document.getElementById("openingCinematic")?.addEventListener("click", (e) => {
   if (e.target.closest(".subtitle-overlay")) return;
   finishOpeningCinematic();
+});
+
+// 第二段视频点击跳过
+document.getElementById("sceneCinematic")?.addEventListener("click", (e) => {
+  if (e.target.closest(".subtitle-overlay")) return;
+  finishScene01Cinematic();
 });
 
 // 初始化标题画面，隐藏主界面

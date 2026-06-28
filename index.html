@@ -14,7 +14,7 @@
       <div class="screen-shade" aria-hidden="true"></div>
 
       <div class="title-screen active" id="titleScreen">
-        <video class="title-video" id="titleVideo" src="./videos/scene_01_opening.mp4" muted loop playsinline preload="auto"></video>
+        <video class="title-video" id="titleVideo" src="./videos/opening.mp4" muted loop playsinline preload="auto"></video>
         <div class="title-overlay"></div>
         <div class="title-content">
           <h1 class="game-title">寒霜纪元：重生领主</h1>
@@ -29,9 +29,15 @@
       </div>
 
       <div class="opening-cinematic" id="openingCinematic">
-        <video class="cinematic-video" id="cinematicVideo" src="./videos/scene_01_opening.mp4" playsinline preload="auto"></video>
+        <video class="cinematic-video" id="cinematicVideo" src="./videos/opening.mp4" playsinline preload="auto"></video>
         <div class="cinematic-overlay"></div>
         <div class="subtitle-overlay" id="subtitleOverlay"></div>
+      </div>
+
+      <div class="scene-cinematic" id="sceneCinematic">
+        <video class="scene-cinematic-video" id="sceneCinematicVideo" src="./videos/scene_01.mp4" playsinline preload="auto"></video>
+        <div class="scene-cinematic-overlay"></div>
+        <div class="subtitle-overlay" id="sceneSubtitleOverlay"></div>
       </div>
 
       <header class="command-bar">
@@ -78,35 +84,76 @@
 
         <section class="view view-play active" id="view-play">
           <div class="film-console">
-            <div class="film-head">
-              <div class="film-head-left">
-                <div class="hero-hud" id="heroHud">
-                  <div class="hero-avatar"><span>陆</span></div>
-                  <div class="hero-info">
-                    <span class="hero-name">陆寒</span>
-                    <span class="hero-title">重生者</span>
-                  </div>
-                </div>
-                <span id="episodeLabel">CH01 / NODE 001</span>
-              </div>
-              <div class="basic-stats" id="basicStats"></div>
-              <span id="riskLabel">寒意警戒：中</span>
-            </div>
             <div class="video-window">
               <img class="scene-visual" id="sceneImg" src="" alt="" />
               <video class="scene-visual" id="sceneVisual" src="" playsinline preload="auto" style="display:none;"></video>
               <div class="scanlines" aria-hidden="true"></div>
               <div class="game-subtitle-overlay" id="gameSubtitleOverlay"></div>
-              <div class="pause-badge" id="playState">点击播放 · 台词音频</div>
-              <div class="frost-meter">
-                <span>寒潮倒计时</span>
-                <strong id="countdown">72:00:00</strong>
+
+              <!-- 顶部导航 HUD -->
+              <div class="hud-nav-bar">
+                <button class="hud-brand" data-action="home">
+                  <span class="hud-brand-mark">❄</span>
+                  <span class="hud-brand-text">寒霜纪元：重生领主</span>
+                </button>
+                <nav class="hud-nav-segment">
+                  <button data-view="play" class="active">剧情</button>
+                  <button data-view="shelter">庇护所</button>
+                  <button data-view="tree">剧情树</button>
+                  <button data-view="ops">商业后台</button>
+                </nav>
+                <div class="hud-nav-actions">
+                  <button class="icon-btn" data-action="save" title="存档">↻</button>
+                  <button class="icon-btn" data-action="load" title="读档">▣</button>
+                  <button class="icon-btn" data-action="toggleSide" title="角色与背包">☰</button>
+                </div>
               </div>
-              <div class="video-controls" aria-label="影像控制">
-                <button data-action="replayScene">▶ 播放</button>
-                <button data-action="skipScene">跳过</button>
+
+              <!-- 顶部 HUD 覆盖层 -->
+              <div class="hud-top-bar">
+                <div class="hud-top-left">
+                  <div class="hero-hud" id="heroHud">
+                    <div class="hero-avatar"><span>陆</span></div>
+                    <div class="hero-info">
+                      <span class="hero-name">陆寒</span>
+                      <span class="hero-title">重生者</span>
+                    </div>
+                  </div>
+                  <span class="episode-tag" id="episodeLabel">CH01 / NODE 001</span>
+                </div>
+                <div class="basic-stats" id="basicStats"></div>
+                <span class="risk-tag" id="riskLabel">寒意警戒：中</span>
               </div>
+
+              <!-- 左上角控制区 -->
+              <div class="hud-controls">
+                <div class="pause-badge" id="playState">点击播放 · 台词音频</div>
+                <div class="video-controls" aria-label="影像控制">
+                  <button data-action="replayScene">▶ 播放</button>
+                  <button data-action="skipScene">跳过</button>
+                </div>
+              </div>
+
+              <!-- 右上角状态区 -->
+              <div class="hud-right-panel">
+                <div class="frost-meter">
+                  <span>寒潮倒计时</span>
+                  <strong id="countdown">72:00:00</strong>
+                </div>
+                <div class="hud-status-box">
+                  <span class="hud-status-label">当前章节</span>
+                  <span class="hud-status-value" id="chapterLabel">第一章</span>
+                </div>
+                <div class="hud-status-box">
+                  <span class="hud-status-label">场景</span>
+                  <span class="hud-status-value" id="sceneLabel">重生醒来</span>
+                </div>
+              </div>
+
+              <!-- 中央选项区 -->
               <div class="choice-grid" id="choices"></div>
+
+              <!-- 底部对话区 -->
               <div class="dialogue-dock">
                 <div class="scene-card" id="sceneCard"></div>
                 <p id="dialogueText"></p>

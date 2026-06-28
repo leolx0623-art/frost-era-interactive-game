@@ -40,6 +40,11 @@
         <div class="subtitle-overlay" id="sceneSubtitleOverlay"></div>
       </div>
 
+      <div class="branch-cinematic" id="branchCinematic">
+        <video class="branch-cinematic-video" id="branchCinematicVideo" src="" playsinline preload="auto"></video>
+        <div class="branch-cinematic-overlay"></div>
+      </div>
+
       <header class="command-bar">
         <button class="brand" data-action="home" aria-label="返回剧情体验">
           <span class="brand-mark">霜</span>
@@ -125,14 +130,8 @@
                 <span class="risk-tag" id="riskLabel">寒意警戒：中</span>
               </div>
 
-              <!-- 左上角控制区 -->
-              <div class="hud-controls">
-                <div class="pause-badge" id="playState">点击播放 · 台词音频</div>
-                <div class="video-controls" aria-label="影像控制">
-                  <button data-action="replayScene">▶ 播放</button>
-                  <button data-action="skipScene">跳过</button>
-                </div>
-              </div>
+              <!-- 左上角状态标签 -->
+              <div class="hud-status-badge" id="playState">已暂停 · 等待你的选择</div>
 
               <!-- 右上角状态区 -->
               <div class="hud-right-panel">

@@ -16,6 +16,7 @@ const defaultStory = {
         {
           text: "A: 救助被困的幸存者",
           next: "c1n2",
+          video: "./videos/02A.mp4",
           effects: { 人口: 8, 声望: 9, 领袖值: 7, 资源: -6 },
           shelter: { 居住舱: 1 },
           item: "幸存者信任",
@@ -25,6 +26,7 @@ const defaultStory = {
         {
           text: "B: 独自搜寻资源，保存实力",
           next: "c1n3",
+          video: "./videos/02B.mp4",
           effects: { 资源: 18, 声望: -5, 黑化值: 6, 武力: 4 },
           item: "军用压缩粮",
           achievement: "冷血库存"
@@ -616,49 +618,73 @@ function finishOpeningCinematic() {
 function playScene01Cinematic() {
   const cinematic = document.getElementById("sceneCinematic");
   const video = document.getElementById("sceneCinematicVideo");
-  const subtitle = document.getElementById("sceneSubtitleOverlay");
-  if (!cinematic || !video || !subtitle) {
+  if (!cinematic || !video) {
     gameStarted = true;
     enterMainGame();
     return;
   }
 
   cinematic.classList.add("active");
-  subtitle.textContent = "";
   video.currentTime = 0;
 
-  // 第二段视频字幕 - 用户提供具体字幕后可在此修改
-  const subtitleText = "废墟中，每一步都可能是陷阱。但我必须前进，为了活下去……也为了那些还在等待希望的人。";
-  const duration = Math.min(12000, Math.max(6000, subtitleText.length * 110));
+  // 角色对话字幕：第9秒显示
+  const dialogueData = {
+    speaker: "陆寒",
+    text: "重生了，我重生了，我一定要成为末日最强者",
+    triggerTime: 9
+  };
+  let dialogueShown = false;
+
+  video.addEventListener("timeupdate", function onTimeUpdate() {
+    if (!dialogueShown && video.currentTime >= dialogueData.triggerTime) {
+      dialogueShown = true;
+      showCharacterDialogue(dialogueData.speaker, dialogueData.text, 4500);
+    }
+  });
 
   video.play().catch(err => {
     console.log("第二段视频播放失败:", err);
     finishScene01Cinematic();
   });
 
-  startSceneSubtitleTypewriter(subtitleText, duration);
-
   video.onended = () => {
+    hideCharacterDialogue();
     finishScene01Cinematic();
   };
 
   video.onerror = () => {
+    hideCharacterDialogue();
     finishScene01Cinematic();
   };
 }
 
-function startSceneSubtitleTypewriter(text, duration) {
-  stopSubtitleTypewriter();
-  const target = document.getElementById("sceneSubtitleOverlay");
-  if (!target) return;
-  target.textContent = "";
+function showCharacterDialogue(speaker, text, duration) {
+  hideCharacterDialogue();
+  const container = document.createElement("div");
+  container.className = "dialogue-subtitle show";
+  container.id = "activeDialogueSubtitle";
+  container.innerHTML = `
+    <span class="speaker-tag">${speaker}</span>
+    <span class="dialogue-text"></span>
+  `;
+  document.querySelector(".scene-cinematic")?.appendChild(container);
+
+  const textEl = container.querySelector(".dialogue-text");
   let index = 0;
-  const interval = Math.max(30, Math.min(80, Math.floor(duration / Math.max(text.length, 1))));
-  subtitleTimer = setInterval(() => {
+  const interval = Math.max(30, Math.min(70, Math.floor(duration / Math.max(text.length, 1))));
+  const timer = setInterval(() => {
     index += 1;
-    target.textContent = text.slice(0, index);
-    if (index >= text.length) stopSubtitleTypewriter();
+    textEl.textContent = text.slice(0, index);
+    if (index >= text.length) {
+      clearInterval(timer);
+      setTimeout(() => hideCharacterDialogue(), 1500);
+    }
   }, interval);
+}
+
+function hideCharacterDialogue() {
+  const el = document.getElementById("activeDialogueSubtitle");
+  if (el) el.remove();
 }
 
 function finishScene01Cinematic() {
@@ -717,6 +743,15 @@ function choose(index) {
     return;
   }
 
+  if (choice.video) {
+    playBranchCinematic(choice.video, () => applyChoiceEffects(choice));
+    return;
+  }
+
+  applyChoiceEffects(choice);
+}
+
+function applyChoiceEffects(choice) {
   if (choice.reset) {
     const keep = { vip: state.vip, sessions: state.sessions + 1 };
     state = { ...structuredClone(window.FROST_INITIAL_STATE || initialState), ...keep };
@@ -744,6 +779,35 @@ function choose(index) {
   render();
 }
 
+function playBranchCinematic(videoSrc, onComplete) {
+  const cinematic = document.getElementById("branchCinematic");
+  const video = document.getElementById("branchCinematicVideo");
+  if (!cinematic || !video) {
+    onComplete();
+    return;
+  }
+
+  cinematic.classList.add("active");
+  video.src = videoSrc;
+  video.currentTime = 0;
+
+  video.play().catch(err => {
+    console.log("分支视频播放失败:", err);
+    cinematic.classList.remove("active");
+    onComplete();
+  });
+
+  video.onended = () => {
+    cinematic.classList.remove("active");
+    onComplete();
+  };
+
+  video.onerror = () => {
+    cinematic.classList.remove("active");
+    onComplete();
+  };
+}
+
 function enterNode(nodeId) {
   const target = story.nodes[nodeId];
   if (!target) return;
@@ -767,9 +831,11 @@ function determineEnding() {
 
 function prepareScenePlayback() {
   stopNarration();
-  sceneMode = "awaiting";
-  document.getElementById("dialogueText").textContent = "点击播放，开始本段影像。";
+  sceneMode = "playing";
+  document.getElementById("dialogueText").textContent = "";
   applyPlaybackState();
+  // 自动开始播放旁白和打字机
+  startScenePlayback();
 }
 
 function startScenePlayback() {
@@ -822,7 +888,7 @@ function applyPlaybackState() {
   videoWindow.classList.toggle("playing", sceneMode === "playing");
   videoWindow.classList.toggle("paused", sceneMode === "paused");
   const labels = {
-    awaiting: "点击播放 · 台词音频",
+    awaiting: "准备中 · 自动播放",
     playing: "播放中 · 旁白",
     paused: "已暂停 · 等待你的选择"
   };
@@ -1042,8 +1108,7 @@ document.addEventListener("click", event => {
   if (action === "addNode") addNode();
   if (action === "exportStory") exportStory();
   if (action === "autoPlan") autoPlan();
-  if (action === "replayScene") startScenePlayback();
-  if (action === "skipScene") finishScenePlayback();
+  if (action === "choose") {
   if (action === "resetState") {
     state = structuredClone(window.FROST_INITIAL_STATE || initialState);
     saveJson(STORAGE_STATE, state);
